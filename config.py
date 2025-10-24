@@ -20,6 +20,9 @@ class Config:
         if database_url.startswith('postgres://'):
             database_url = database_url.replace('postgres://', 'postgresql://')
         SQLALCHEMY_DATABASE_URI = database_url
+    elif os.environ.get('RAILWAY_ENVIRONMENT'):
+        # Railway without DATABASE_URL - use SQLite as fallback
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///jshoes.db'
     elif os.environ.get('FLASK_ENV') == 'production':
         # Production MySQL
         SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}'
