@@ -46,3 +46,6 @@ class Config:
     # PayMongo Configuration
     PAYMONGO_PUBLIC_KEY = os.environ.get('PAYMONGO_PUBLIC_KEY')
     PAYMONGO_SECRET_KEY = os.environ.get('PAYMONGO_SECRET_KEY')
+    
+    # CORS Configuration
+    CORS_ORIGINS = ['*']  # Allow all origins for development

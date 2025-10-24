@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_migrate import Migrate
+from flask_cors import CORS
 from config import Config
 from models import db, login_manager
 from models.user import User
@@ -14,6 +15,7 @@ def create_app():
     setup_error_logging(app)
     
     # Initialize extensions
+    CORS(app)
     db.init_app(app)
     migrate = Migrate(app, db)
     login_manager.init_app(app)
