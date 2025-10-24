@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="hero">
+    <div class="hero-content container py-2 px-4 text-center">
+        <h1 class="hero-title"></h1>
+        <p class="hero-subtitle"></p>
+        <a href="{{ url_for('main.shop') }}" class="btn btn-light btn-lg">Shop Now</a>
+    </div>
+</div>
+
+<h2>Featured Products</h2>
+<div class="row">
+    {% for product in products %}
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            {% if product.image_url %}
+                <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text">{{ product.description[:100] }}...</p>
+                <p class="text-primary fw-bold">₱{{ "{:,.2f}".format(product.price) }}</p>
+                <a href="{{ url_for('main.product_detail', id=product.id) }}" class="btn btn-primary">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

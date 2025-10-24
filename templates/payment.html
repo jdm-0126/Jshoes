@@ -1,0 +1,122 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1>Payment</h1>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Order #:</strong> {{ order.id }}</p>
+                        <p><strong>Total Amount:</strong> ₱{{ "%.2f"|format(order.total_amount) }}</p>
+                        <p><strong>Status:</strong> {{ order.status|title }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Payment Method</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="paymentForm">
+                            <input type="hidden" name="order_id" value="{{ order.id }}">
+                            
+                            <div class="mb-3">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="gcash" value="gcash" checked>
+                                    <label class="form-check-label" for="gcash">
+                                        <strong>GCash</strong><br>
+                                        <small class="text-muted">Mobile wallet payment</small>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="paymaya" value="paymaya">
+                                    <label class="form-check-label" for="paymaya">
+                                        <strong>PayMaya</strong><br>
+                                        <small class="text-muted">Digital wallet payment</small>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="shopeepay" value="shopeepay">
+                                    <label class="form-check-label" for="shopeepay">
+                                        <strong>ShopeePay</strong><br>
+                                        <small class="text-muted">E-wallet payment</small>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="qrph" value="qrph">
+                                    <label class="form-check-label" for="qrph">
+                                        <strong>QR PH</strong><br>
+                                        <small class="text-muted">QR code payment</small>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success btn-lg w-100">
+                                Pay ₱{{ "%.2f"|format(order.total_amount) }}
+                            </button>
+                            <a href="{{ url_for('cart.view_cart') }}" class="btn btn-outline-secondary btn-sm w-100 mt-2">
+                                <i class="fas fa-arrow-left"></i> Back to Cart
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('/process_payment', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.checkout_url) {
+                // Redirect to PayMongo checkout
+                window.location.href = data.checkout_url;
+            } else {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Payment Successful!',
+                    text: 'Your payment has been processed successfully'
+                }).then(() => {
+                    window.location.href = '/checkout';
+                });
+            }
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Payment Failed!',
+                text: data.message
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Payment Error!',
+            text: 'Payment processing error occurred'
+        });
+    });
+});
+</script>
+{% endblock %}

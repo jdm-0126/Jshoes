@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Our Shoes Collection</h1>
+    <div class="d-flex gap-2">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                {% if selected_category %}
+                    {{ selected_category|title }}
+                {% else %}
+                    All Categories
+                {% endif %}
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('main.shop', brand=selected_brand) }}">All Categories</a></li>
+                {% for category in categories %}
+                    <li><a class="dropdown-item" href="{{ url_for('main.shop', category=category, brand=selected_brand) }}">{{ category|title }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        {% if brands %}
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                {% if selected_brand %}
+                    {{ selected_brand }}
+                {% else %}
+                    All Brands
+                {% endif %}
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('main.shop', category=selected_category) }}">All Brands</a></li>
+                {% for brand in brands %}
+                    <li><a class="dropdown-item" href="{{ url_for('main.shop', category=selected_category, brand=brand) }}">{{ brand }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if products is defined and products.items is defined %}
+    {% set prod_items = products.items %}
+{% else %}
+    {% set prod_items = products or [] %}
+{% endif %}
+
+<div class="row">
+    {% for product in prod_items %}
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            {% if product.image_url %}
+                <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="text-muted mb-1"><strong>{{ product.brand or 'Unknown' }}</strong> • {{ (product.category or 'shoes')|title }}</p>
+                <p class="card-text">{{ (product.description or '')[:100] }}{% if product.description and product.description|length > 100 %}...{% endif %}</p>
+                <p class="text-primary fw-bold">₱{{ "{:,.2f}".format(product.price) }}</p>
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('main.product_detail', id=product.id) }}" class="btn btn-outline-primary">Details</a>
+                    <button onclick="addToCart('{{ product.id }}')" class="btn btn-primary">Add to Cart</button>
+                </div> 
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination (only render if products has pagination attrs) -->
+{% if products is defined and products.items is defined %}
+<nav>
+    <ul class="pagination justify-content-center">
+        {% if products.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.shop', page=products.prev_num, category=selected_category, brand=selected_brand) }}">Previous</a>
+            </li>
+        {% endif %}
+        
+        {% for page_num in products.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != products.page %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('main.shop', page=page_num, category=selected_category, brand=selected_brand) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        
+        {% if products.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.shop', page=products.next_num, category=selected_category, brand=selected_brand) }}">Next</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

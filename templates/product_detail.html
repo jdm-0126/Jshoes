@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        {% if product.image_url %}
+            <img src="{{ product.image_url }}" class="img-fluid" alt="{{ product.name }}">
+        {% else %}
+            <div class="bg-light p-5 text-center">
+                <p>No image available</p>
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-6">
+        <h1>{{ product.name }}</h1>
+        <p class="text-muted"><strong>Brand:</strong> {{ product.brand or 'Unknown' }}</p>
+        <p class="text-muted"><strong>Category:</strong> {{ product.category|title or 'Shoes' }}</p>
+        <p class="text-primary fw-bold">₱{{ "{:,.2f}".format(product.price) }}</p>
+        
+        <div class="my-4">
+            <h5>Description</h5>
+            <p>{{ product.description }}</p>
+        </div>
+        
+        <div class="my-4">
+            <p><strong>Stock:</strong> {{ product.stock }} available</p>
+        </div>
+        
+        {% if product.stock > 0 %}
+            <button onclick="addToCart('{{ product.id }}')" class="btn btn-primary btn-lg">Add to Cart</button>
+        {% else %}
+            <button class="btn btn-secondary btn-lg" disabled>Out of Stock</button>
+        {% endif %}
+        
+        <a href="{{ url_for('main.shop') }}" class="btn btn-outline-secondary btn-lg ms-2">Back to Shop</a>
+    </div>
+</div>
+{% endblock %}
