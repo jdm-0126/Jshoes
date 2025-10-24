@@ -1,0 +1,128 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-envelope-open"></i> Inquiry Details</h1>
+    <div>
+        <a href="{{ url_for('admin.manage_inquiries') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Inbox
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white border-bottom">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h4 class="mb-1">{{ inquiry.subject }}</h4>
+                <div class="text-muted">
+                    <i class="fas fa-user me-2"></i>{{ inquiry.name }}
+                    <span class="mx-2">•</span>
+                    <i class="fas fa-envelope me-2"></i>{{ inquiry.email }}
+                </div>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-{{ 'success' if inquiry.status == 'resolved' else 'warning' if inquiry.status == 'in_progress' else 'secondary' }} mb-2">
+                    {{ inquiry.status|title }}
+                </span>
+                <br>
+                <small class="text-muted">
+                    {{ inquiry.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="bg-light p-4 rounded">
+            <div class="mb-3">
+                <strong>Message:</strong>
+            </div>
+            <div style="white-space: pre-wrap; line-height: 1.6;">{{ inquiry.message }}</div>
+        </div>
+        
+        <div class="mt-4">
+            <h6>Quick Actions:</h6>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary" onclick="replyToInquiry()">
+                    <i class="fas fa-reply"></i> Reply
+                </button>
+                <button type="button" class="btn btn-outline-success" onclick="markAsResolved()">
+                    <i class="fas fa-check"></i> Mark Resolved
+                </button>
+                <button type="button" class="btn btn-outline-info" onclick="markInProgress()">
+                    <i class="fas fa-clock"></i> In Progress
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function replyToInquiry() {
+    const subject = "Re: {{ inquiry.subject }}";
+    const email = "{{ inquiry.email }}";
+    const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}`;
+    window.location.href = mailtoLink;
+}
+
+function markAsResolved() {
+    Swal.fire({
+        title: 'Mark as Resolved?',
+        text: 'This will mark the inquiry as resolved.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, mark resolved'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            updateInquiryStatus('resolved');
+        }
+    });
+}
+
+function markInProgress() {
+    Swal.fire({
+        title: 'Mark as In Progress?',
+        text: 'This will mark the inquiry as in progress.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ffc107',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, mark in progress'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            updateInquiryStatus('in_progress');
+        }
+    });
+}
+
+function updateInquiryStatus(status) {
+    fetch(`/admin/update_inquiry_status/{{ inquiry.id }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: status })
+    })
+    .then(response => {
+        if (response.ok) {
+            Swal.fire({
+                title: 'Updated!',
+                text: 'Inquiry status has been updated.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire('Error!', 'Failed to update status.', 'error');
+        }
+    })
+    .catch(error => {
+        Swal.fire('Error!', 'Failed to update status.', 'error');
+    });
+}
+</script>
+{% endblock %}

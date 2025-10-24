@@ -13,10 +13,18 @@ class Config:
     DB_PASSWORD = os.environ.get('DB_PASSWORD') or 'root0126'
     DB_NAME = os.environ.get('DB_NAME') or 'jshoes_db'
     
-    # Use MySQL for production, SQLite for development
-    if os.environ.get('FLASK_ENV') == 'production':
+    # Database Configuration
+    if os.environ.get('DATABASE_URL'):
+        # Railway/Heroku PostgreSQL
+        database_url = os.environ.get('DATABASE_URL')
+        if database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://')
+        SQLALCHEMY_DATABASE_URI = database_url
+    elif os.environ.get('FLASK_ENV') == 'production':
+        # Production MySQL
         SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}'
     else:
+        # Development SQLite
         SQLALCHEMY_DATABASE_URI = 'sqlite:///jshoes.db'
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False

@@ -41,12 +41,14 @@ def create_app():
     app.register_blueprint(main)
     app.register_blueprint(auth)
     app.register_blueprint(cart)
-    app.register_blueprint(admin)
+    app.register_blueprint(admin, url_prefix='/admin')
     app.register_blueprint(payment)
     
     # Import delivery models to ensure they're registered
     from models.delivery import Delivery, DeliveryItem
     from models.contact_settings import ContactSettings
+    from models.review import Review
+    from models.inventory_alert import InventoryAlert
     
     # Create tables
     with app.app_context():

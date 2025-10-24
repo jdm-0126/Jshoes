@@ -50,12 +50,28 @@ def login():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash('Registration successful')
-        return redirect(url_for('auth.login'))
+        # Check if username already exists
+        existing_user = User.query.filter_by(username=form.username.data).first()
+        if existing_user:
+            flash('Username already exists. Please choose a different username.', 'error')
+            return render_template('register.html', form=form)
+        
+        # Check if email already exists
+        existing_email = User.query.filter_by(email=form.email.data).first()
+        if existing_email:
+            flash('Email already registered. Please use a different email.', 'error')
+            return render_template('register.html', form=form)
+        
+        try:
+            user = User(username=form.username.data, email=form.email.data)
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            flash('Registration successful! You can now login.', 'success')
+            return redirect(url_for('auth.login'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Registration failed. Please try again.', 'error')
     return render_template('register.html', form=form)
 
 @auth.route('/logout')

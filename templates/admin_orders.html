@@ -3,25 +3,105 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1><i class="fas fa-shopping-bag"></i> Order Management</h1>
-    <div class="dropdown">
-        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-            {% if selected_status %}
-                {{ selected_status|title|replace('_', ' ') }}
-            {% else %}
-                All Orders
-            {% endif %}
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+            <i class="fas fa-filter"></i>
         </button>
-        <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders') }}">All Orders</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status='pending_payment') }}">Pending Payment</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status='paid') }}">Paid</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status='in_transit') }}">In Transit</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status='delivered') }}">Delivered</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status='received') }}">Received</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status='cancelled') }}">Cancelled</a></li>
-        </ul>
+        <div class="dropdown">
+            <button class="btn btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-sort"></i>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status=selected_status, search=search, start_date=start_date, end_date=end_date, payment_method=payment_method, location=location, sort_by='created_at', sort_order='desc') }}">Newest First</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status=selected_status, search=search, start_date=start_date, end_date=end_date, payment_method=payment_method, location=location, sort_by='created_at', sort_order='asc') }}">Oldest First</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status=selected_status, search=search, start_date=start_date, end_date=end_date, payment_method=payment_method, location=location, sort_by='total_amount', sort_order='desc') }}">Highest Amount</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status=selected_status, search=search, start_date=start_date, end_date=end_date, payment_method=payment_method, location=location, sort_by='total_amount', sort_order='asc') }}">Lowest Amount</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status=selected_status, search=search, start_date=start_date, end_date=end_date, payment_method=payment_method, location=location, sort_by='id', sort_order='desc') }}">Order ID (High-Low)</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status=selected_status, search=search, start_date=start_date, end_date=end_date, payment_method=payment_method, location=location, sort_by='id', sort_order='asc') }}">Order ID (Low-High)</a></li>
+            </ul>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                {% if selected_status %}
+                    {{ selected_status|title|replace('_', ' ') }}
+                {% else %}
+                    All Orders
+                {% endif %}
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders') }}">All Orders</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status='pending_payment') }}">Pending Payment</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status='paid') }}">Paid</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status='in_transit') }}">In Transit</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status='delivered') }}">Delivered</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status='received') }}">Received</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders', status='cancelled') }}">Cancelled</a></li>
+            </ul>
+        </div>
     </div>
 </div>
+
+<!-- Collapsible Filter Bar -->
+<div class="collapse mb-3" id="filterCollapse">
+    <div class="card card-body">
+        <form method="GET" class="row g-2">
+            {% if selected_status %}
+                <input type="hidden" name="status" value="{{ selected_status }}">
+            {% endif %}
+            <div class="col-12 col-md-3">
+                <label class="form-label small">Search</label>
+                <input type="text" class="form-control form-control-sm" name="search" placeholder="Order ID, Name, Email" value="{{ search or '' }}">
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label small">From</label>
+                <input type="date" class="form-control form-control-sm" name="start_date" value="{{ start_date or '' }}">
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label small">To</label>
+                <input type="date" class="form-control form-control-sm" name="end_date" value="{{ end_date or '' }}">
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label small">Payment</label>
+                <select class="form-select form-select-sm" name="payment_method">
+                    <option value="">All Methods</option>
+                    <option value="gcash" {{ 'selected' if payment_method == 'gcash' }}>GCash</option>
+                    <option value="paymaya" {{ 'selected' if payment_method == 'paymaya' }}>PayMaya</option>
+                    <option value="grab_pay" {{ 'selected' if payment_method == 'grab_pay' }}>GrabPay</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label small">Location</label>
+                <input type="text" class="form-control form-control-sm" name="location" placeholder="City" value="{{ location or '' }}">
+            </div>
+            <div class="col-12 col-md-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if search or start_date or end_date or payment_method or location %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="alert alert-info d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-info-circle"></i> 
+                Filters applied:
+                {% if search %} Search: "{{ search }}"{% endif %}
+                {% if start_date %} From: {{ start_date }}{% endif %}
+                {% if end_date %} To: {{ end_date }}{% endif %}
+                {% if payment_method %} Payment: {{ payment_method|title }}{% endif %}
+                {% if location %} Location: "{{ location }}"{% endif %}
+            </div>
+            <a href="{{ url_for('admin.manage_orders', status=selected_status) }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-times"></i> Clear Filters
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% if orders %}
 <div class="row">

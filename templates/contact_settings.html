@@ -52,7 +52,43 @@
                     </div>
                 </div>
                 
-                <button type="submit" class="btn btn-success">
+                <!-- Testimonials Section -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <button class="btn btn-link text-decoration-none p-0 w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#testimonialsSection">
+                            <h6 class="mb-0">
+                                <i class="fas fa-quote-left"></i> Testimonials (Read-Only)
+                                <i class="fas fa-chevron-down float-end"></i>
+                            </h6>
+                        </button>
+                    </div>
+                    <div class="collapse" id="testimonialsSection">
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> Testimonials are currently static. Contact developer to modify them.
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6>Testimonial 1</h6>
+                                    <p>"{{ settings.testimonial1_text }}"</p>
+                                    <small class="text-muted">- {{ settings.testimonial1_author }}</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Testimonial 2</h6>
+                                    <p>"{{ settings.testimonial2_text }}"</p>
+                                    <small class="text-muted">- {{ settings.testimonial2_author }}</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Testimonial 3</h6>
+                                    <p>"{{ settings.testimonial3_text }}"</p>
+                                    <small class="text-muted">- {{ settings.testimonial3_author }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-success mt-3">
                     <i class="fas fa-save"></i> Save Changes
                 </button>
             </form>

@@ -9,6 +9,30 @@ class ContactSettings(db.Model):
     facebook_url = db.Column(db.String(200), default='https://www.facebook.com/profile.php?id=61564021213335')
     instagram_url = db.Column(db.String(200), default='https://www.instagram.com/jshoes_ph/')
     
+    @property
+    def testimonial1_text(self):
+        return 'Amazing quality shoes! Fast delivery and excellent customer service. Highly recommended!'
+    
+    @property
+    def testimonial1_author(self):
+        return 'Maria Santos'
+    
+    @property
+    def testimonial2_text(self):
+        return 'Perfect fit and comfortable. Great selection of styles. Will definitely order again!'
+    
+    @property
+    def testimonial2_author(self):
+        return 'John Cruz'
+    
+    @property
+    def testimonial3_text(self):
+        return 'Best online shoe store! Affordable prices and trendy designs. Love shopping here!'
+    
+    @property
+    def testimonial3_author(self):
+        return 'Ana Reyes'
+    
     @classmethod
     def get_settings(cls):
         settings = cls.query.first()

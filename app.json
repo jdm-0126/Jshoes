@@ -1,0 +1,31 @@
+{
+  "name": "JShoes E-commerce Store",
+  "description": "A Flask-based online shoe store with PayMongo integration",
+  "repository": "https://github.com/jdm-0126/Jshoes",
+  "keywords": ["flask", "ecommerce", "shoes", "paymongo", "python"],
+  "addons": [
+    "heroku-postgresql:mini"
+  ],
+  "env": {
+    "FLASK_ENV": {
+      "description": "Flask environment",
+      "value": "production"
+    },
+    "SECRET_KEY": {
+      "description": "Secret key for Flask sessions",
+      "generator": "secret"
+    },
+    "PAYMONGO_PUBLIC_KEY": {
+      "description": "PayMongo public key for payments"
+    },
+    "PAYMONGO_SECRET_KEY": {
+      "description": "PayMongo secret key for payments"
+    },
+    "MAIL_USERNAME": {
+      "description": "Email username for sending receipts"
+    },
+    "MAIL_PASSWORD": {
+      "description": "Email password for sending receipts"
+    }
+  }
+}
