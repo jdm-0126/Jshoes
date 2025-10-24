@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white text-center">
+                <h3><i class="fas fa-check-circle"></i> Order Confirmed!</h3>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    <h4 class="text-success mt-3">Thank you for your purchase!</h4>
+                    <p class="text-muted">Order #{{ order.id }}</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6><i class="fas fa-user"></i> Customer Details</h6>
+                                <p class="mb-1"><strong>Name:</strong> {{ order.user.username }}</p>
+                                <p class="mb-1"><strong>Email:</strong> {{ order.user.email }}</p>
+                                <p class="mb-0"><strong>Phone:</strong> {{ order.user.phone or 'Not provided' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6><i class="fas fa-truck"></i> Delivery Details</h6>
+                                <p class="mb-1"><strong>Address:</strong> {{ order.user.address or 'Not provided' }}</p>
+                                <p class="mb-1"><strong>City:</strong> {{ order.user.city or 'Not provided' }}</p>
+                                <p class="mb-0"><strong>Target Date:</strong> {{ order.delivery_date.strftime('%B %d, %Y') if order.delivery_date else 'Not specified' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card bg-primary text-white mt-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">Order Total</h6>
+                                <small>Payment Status: Confirmed</small>
+                            </div>
+                            <h4 class="mb-0">₱{{ "{:,.2f}".format(order.total_amount) }}</h4>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>What's Next?</strong> You will receive a confirmation email shortly. 
+                    We'll contact you to confirm delivery details and schedule.
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-primary me-2">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                    <a href="{{ url_for('main.shop') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-shopping-bag"></i> Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

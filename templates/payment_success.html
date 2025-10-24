@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white text-center">
+                <h3><i class="fas fa-check-circle"></i> Payment Successful!</h3>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="text-success mb-3">Thank you for your purchase!</h4>
+                <p class="mb-3">Your order has been processed successfully and you will receive a confirmation email shortly.</p>
+                <p class="text-muted mb-4">We appreciate your business and hope you enjoy your new shoes!</p>
+                
+                <div class="d-flex flex-column flex-md-row gap-2 justify-content-center">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                    <a href="{{ url_for('main.shop') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-shopping-bag"></i> Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show success SweetAlert on page load
+document.addEventListener('DOMContentLoaded', function() {
+    Swal.fire({
+        icon: 'success',
+        title: 'Payment Successful!',
+        text: 'Your order has been processed successfully. Thank you for your purchase!',
+        confirmButtonText: 'Great!',
+        confirmButtonColor: '#28a745'
+    });
+});
+</script>
+{% endblock %}

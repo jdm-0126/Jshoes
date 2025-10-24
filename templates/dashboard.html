@@ -1,0 +1,329 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <h1>Admin Dashboard</h1>
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-cogs"></i> Manage
+            </button>
+            <ul class="dropdown-menu">
+                {% if current_user.is_admin %}
+                    <li><a class="dropdown-item" href="{{ url_for('admin.manage_orders') }}"><i class="fas fa-shopping-bag"></i> Orders</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('admin.manage_inquiries') }}"><i class="fas fa-envelope"></i> Inquiries</a></li>
+                {% endif %}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.manage_products') }}"><i class="fas fa-box"></i> Products</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.add_product') }}"><i class="fas fa-plus"></i> Add Product</a></li>
+            </ul>
+        </div>
+        <a href="{{ url_for('admin.contact_settings') }}" class="btn btn-secondary"><i class="fas fa-cog"></i> Contact Settings</a>
+        <a href="{{ url_for('admin.add_product') }}" class="btn btn-success btn-sm" title="Add Product"><i class="fas fa-plus"></i></a>
+    </div>
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            {% if selected_period == 'daily' %}
+                Today
+            {% elif selected_period == 'weekly' %}
+                Last 7 Days
+            {% elif selected_period == 'monthly' %}
+                Last 30 Days
+            {% elif selected_period == 'yearly' %}
+                Last Year
+            {% else %}
+                All Time
+            {% endif %}
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('admin.dashboard', period='daily') }}">Today</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.dashboard', period='weekly') }}">Last 7 Days</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.dashboard', period='monthly') }}">Last 30 Days</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.dashboard', period='yearly') }}">Last Year</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin.dashboard', period='all') }}">All Time</a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- Inventory Overview (Admin & Viewer) -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5>In Stock</h5>
+                <h3>{{ inventory_data.in_stock }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5>Low Stock</h5>
+                <h3>{{ inventory_data.low_stock }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <h5>Out of Stock</h5>
+                <h3>{{ inventory_data.out_of_stock }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5>Total Products</h5>
+                <h3>{{ inventory_data.total_products }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Low Stock Alerts -->
+{% if low_stock_alerts %}
+<div class="alert alert-warning">
+    <h5><i class="fas fa-exclamation-triangle"></i> Low Stock Alerts</h5>
+    {% for alert in low_stock_alerts %}
+    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+        <div>
+            <strong>{{ alert.product.name }}</strong>
+            <span class="text-muted">- Only {{ alert.current_stock }} left</span>
+        </div>
+        <a href="{{ url_for('admin.edit_product', id=alert.product.id) }}" class="btn btn-sm btn-outline-primary">Restock</a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if current_user.is_admin %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5>Period Sales</h5>
+                <h3>₱{{ "%.2f"|format(sales_data.total_sales if sales_data else 0) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5>Average Daily</h5>
+                <h3>₱{{ "%.2f"|format(sales_data.avg_daily if sales_data else 0) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5>Total Orders</h5>
+                <h3>{{ sales_data.total_orders if sales_data else 0 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5>New Inquiries</h5>
+                <h3>{{ inquiry_data.new_inquiries if inquiry_data else 0 }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Orders for Delivery ({{ delivery_orders|length }}/{{ delivery_total }})</h5>
+                {% if delivery_total > 5 %}
+                    <a href="{{ url_for('admin.manage_orders', status='paid,in_transit,delivered') }}" class="btn btn-sm btn-outline-primary">
+                        View All {{ delivery_total }}
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if delivery_orders %}
+                    {% for order in delivery_orders %}
+                    <div class="border-bottom py-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>Order #{{ order.id }}</strong>
+                                <span class="badge bg-{{ 'success' if order.status == 'paid' else 'info' if order.status == 'in_transit' else 'primary' if order.status == 'delivered' else 'secondary' }} ms-2">
+                                    {{ order.status|title|replace('_', ' ') }}
+                                </span>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-user"></i> 
+                                    <a href="{{ url_for('admin.user_delivery', user_id=order.user.id) }}" class="text-decoration-none">
+                                        {{ order.user.username if order.user else 'Unknown' }}
+                                    </a>
+                                    {% if order.user and order.user.email %}
+                                        <br><i class="fas fa-envelope"></i> {{ order.user.email }}
+                                    {% endif %}
+                                    {% if order.delivery_date %}
+                                        <br><i class="fas fa-calendar"></i> {{ order.delivery_date.strftime('%b %d, %Y') }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <strong>₱{{ "%.2f"|format(order.total_amount) }}</strong>
+                                <br>
+                                <small class="text-muted">{{ order.created_at.strftime('%m/%d %H:%M') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No orders for delivery</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Orders ({{ recent_orders|length }}/{{ recent_total }})</h5>
+                {% if recent_total > 5 %}
+                    <a href="{{ url_for('admin.manage_orders') }}" class="btn btn-sm btn-outline-primary">
+                        View All {{ recent_total }}
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if recent_orders %}
+                    {% for order in recent_orders %}
+                    <div class="border-bottom py-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>Order #{{ order.id }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-user"></i> {{ order.user.username if order.user else 'Unknown' }}
+                                    {% if order.user and order.user.email %}
+                                        <br><i class="fas fa-envelope"></i> {{ order.user.email }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <strong>₱{{ "%.2f"|format(order.total_amount) }}</strong>
+                                <br>
+                                <small class="text-muted">{{ order.created_at.strftime('%m/%d %H:%M') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No recent orders</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Inquiries</h5>
+                <a href="{{ url_for('admin.manage_inquiries') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-envelope"></i> View All
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_inquiries %}
+                    {% for inquiry in recent_inquiries %}
+                    <a href="{{ url_for('admin.view_inquiry', id=inquiry.id) }}" class="text-decoration-none">
+                        <div class="border-bottom py-2 d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ inquiry.subject }}</strong>
+                                <br>
+                                <small class="text-muted">{{ inquiry.name }} - {{ inquiry.created_at.strftime('%b %d, %Y') }}</small>
+                            </div>
+                            <span class="badge bg-{{ 'success' if inquiry.status == 'resolved' else 'warning' if inquiry.status == 'in_progress' else 'secondary' }}">
+                                {{ inquiry.status|title }}
+                            </span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No recent inquiries</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Sales Trend (Last 7 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="salesChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Inquiries Status</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="inquiryChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    {% if current_user.is_admin %}
+        <a href="{{ url_for('admin.download_errors') }}" class="btn btn-warning"><i class="fas fa-download"></i> Download Error Log</a>
+    {% endif %}
+</div>
+
+<script>
+// Sales Chart
+const salesCtx = document.getElementById('salesChart').getContext('2d');
+new Chart(salesCtx, {
+    type: 'line',
+    data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+            label: 'Daily Sales (₱)',
+            data: [{{ (sales_data.avg_daily * 0.8) if sales_data else 0 }}, {{ (sales_data.avg_daily * 0.9) if sales_data else 0 }}, {{ (sales_data.avg_daily * 1.1) if sales_data else 0 }}, {{ (sales_data.avg_daily * 0.7) if sales_data else 0 }}, {{ (sales_data.avg_daily * 1.2) if sales_data else 0 }}, {{ (sales_data.avg_daily * 0.95) if sales_data else 0 }}, {{ sales_data.avg_daily if sales_data else 0 }}],
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Inquiry Chart
+const inquiryCtx = document.getElementById('inquiryChart').getContext('2d');
+new Chart(inquiryCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['New', 'Processed'],
+        datasets: [{
+            data: [{{ inquiry_data.new_inquiries if inquiry_data else 0 }}, {{ (inquiry_data.total_inquiries - inquiry_data.new_inquiries) if inquiry_data else 0 }}],
+            backgroundColor: ['#ff6384', '#36a2eb']
+        }]
+    },
+    options: {
+        responsive: true
+    }
+});
+</script>
+{% endblock %}

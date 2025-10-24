@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        {% if product.image_url %}
+            <img src="{{ product.image_url }}" class="img-fluid" alt="{{ product.name }}">
+        {% else %}
+            <div class="bg-light p-5 text-center">
+                <p>No image available</p>
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-6">
+        <h1>{{ product.name }}</h1>
+        <p class="text-muted"><strong>Brand:</strong> {{ product.brand or 'Unknown' }}</p>
+        <p class="text-muted"><strong>Category:</strong> {{ product.category|title or 'Shoes' }}</p>
+        <p class="text-primary fw-bold">₱{{ "{:,.2f}".format(product.price) }}</p>
+        
+        <!-- Rating Display -->
+        {% if avg_rating > 0 %}
+        <div class="mb-3">
+            <div class="d-flex align-items-center">
+                {% for i in range(1, 6) %}
+                    <i class="fas fa-star {{ 'text-warning' if i <= avg_rating else 'text-muted' }}"></i>
+                {% endfor %}
+                <span class="ms-2 text-muted">({{ avg_rating }}/5 - {{ review_count }} reviews)</span>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="my-4">
+            <h5>Description</h5>
+            <p>{{ product.description }}</p>
+        </div>
+        
+        <div class="my-4">
+            <p><strong>Stock:</strong> {{ product.stock }} available</p>
+        </div>
+        
+        {% if product.stock > 0 %}
+            <button onclick="addToCart('{{ product.id }}')" class="btn btn-primary btn-lg">Add to Cart</button>
+        {% else %}
+            <button class="btn btn-secondary btn-lg" disabled>Out of Stock</button>
+        {% endif %}
+        
+        <a href="{{ url_for('main.shop') }}" class="btn btn-outline-secondary btn-lg ms-2">Back to Shop</a>
+        
+        <!-- Review Form -->
+        {% if can_review %}
+        <div class="mt-4">
+            <button class="btn btn-outline-warning" data-bs-toggle="collapse" data-bs-target="#reviewForm">
+                <i class="fas fa-star"></i> Write Review
+            </button>
+            <div class="collapse mt-3" id="reviewForm">
+                <div class="card">
+                    <div class="card-body">
+                        <form action="{{ url_for('main.add_review', product_id=product.id) }}" method="POST">
+                            <div class="mb-3">
+                                <label class="form-label">Rating *</label>
+                                <div class="rating-stars">
+                                    {% for i in range(1, 6) %}
+                                    <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" required>
+                                    <label for="star{{ i }}" class="text-warning fs-4"><i class="fas fa-star"></i></label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Comment (optional)</label>
+                                <textarea name="comment" class="form-control" rows="3" placeholder="Share your experience with this product..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success">Submit Review</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Reviews Section -->
+{% if reviews %}
+<div class="row mt-5">
+    <div class="col-12">
+        <h4>Customer Reviews ({{ review_count }})</h4>
+        {% for review in reviews %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1">{{ review.user.username }}</h6>
+                        <div class="mb-2">
+                            {% for i in range(1, 6) %}
+                                <i class="fas fa-star {{ 'text-warning' if i <= review.rating else 'text-muted' }}"></i>
+                            {% endfor %}
+                        </div>
+                        {% if review.comment %}
+                            <p class="mb-2">{{ review.comment }}</p>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted">{{ review.created_at.strftime('%B %d, %Y') }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<style>
+.rating-stars input[type="radio"] {
+    display: none;
+}
+.rating-stars label {
+    cursor: pointer;
+    margin-right: 5px;
+}
+.rating-stars label:hover,
+.rating-stars input[type="radio"]:checked ~ label,
+.rating-stars label:hover ~ label {
+    color: #ffc107 !important;
+}
+</style>
+{% endblock %}

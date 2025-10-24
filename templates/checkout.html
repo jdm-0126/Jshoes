@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h3>Order Confirmation</h3>
+            </div>
+            <div class="card-body text-center">
+                <h4>Thank you for your order!</h4>
+                <p>Your order #{{ order.id }} has been placed successfully.</p>
+                <p><strong>Total Amount: ₱{{ "%.2f"|format(order.total_amount) }}</strong></p>
+                <p>You will receive an email confirmation shortly.</p>
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary">Continue Shopping</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
